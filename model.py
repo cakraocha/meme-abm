@@ -35,15 +35,18 @@ class MemeModel(Model):
     def __init__(
         self,
         num_nodes=100,
-        avg_node_degree=10,
+        n_groups=2,
         initial_viral_size=10,
         meme_spread_chance=0.4,
         maybe_bored=0.3
     ) -> None:
         # init model variables
         self.num_nodes = num_nodes
-        prob = avg_node_degree / self.num_nodes
-        self.G = nx.erdos_renyi_graph(n=self.num_nodes, p=prob)
+        node_list = [num_nodes // n_groups for _ in range(n_groups)]
+        node_list[-1] += num_nodes - sum(node_list)  # adding odd nodes to last group
+        p_in = 0.01
+        p_out = 0.05
+        self.G = nx.random_partition_graph(node_list, p_in, p_out)
         self.grid = NetworkGrid(self.G)
         self.schedule = RandomActivation(self)
         self.initial_viral_size = (
@@ -136,10 +139,12 @@ class MemeAgent(Agent):
     def try_be_bored(self):
         if self.random.random() < self.maybe_bored:
             self.state = State.BORED
-        else:
-            self.state = State.INTERESTED
+        # else:
+        #     self.state = State.INTERESTED
 
     def step(self):
         if self.state is State.INTERESTED:
             self.try_to_spread_memes()
-        self.try_be_bored()
+            self.try_be_bored()
+        if not State.BORED:
+            self.try_be_bored()

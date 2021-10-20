@@ -85,8 +85,14 @@ model_params = {
         10,
         description="How many agents to be included in the model?",
     ),
-    "avg_node_degree": UserSettableParameter(
-        "slider", "Avg Node Degree", 10, 10, 50, 1, description="Avg node degree"
+    "n_groups": UserSettableParameter(
+        "slider",
+        "Number of Groups",
+        2,
+        2,
+        10,
+        1,
+        description="Set your group partition",
     ),
     "initial_viral_size": UserSettableParameter(
         "slider",
