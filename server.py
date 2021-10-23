@@ -18,8 +18,10 @@ def network_portrayal(G):
         }.get(agent.state, "#808080")
 
     def edge_color(agent1, agent2):
-        if State.BORED in (agent1.state, agent2.state):
-            return "#000000"
+        # if State.BORED in (agent1.state, agent2.state):
+        #     return "#000000"
+        if State.INTERESTED in (agent1.state, agent2.state):
+            return "#d21404"
         return "#e8e8e8"
 
     def edge_width(agent1, agent2):

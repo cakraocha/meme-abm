@@ -44,8 +44,8 @@ class MemeModel(Model):
         self.num_nodes = num_nodes
         node_list = [num_nodes // n_groups for _ in range(n_groups)]
         node_list[-1] += num_nodes - sum(node_list)  # adding odd nodes to last group
-        p_in = 0.05
-        p_out = 0.01
+        p_in = 0.08
+        p_out = 0.003
         self.G = nx.random_partition_graph(node_list, p_in, p_out)
         self.grid = NetworkGrid(self.G)
         self.schedule = RandomActivation(self)
