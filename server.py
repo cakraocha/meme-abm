@@ -97,8 +97,8 @@ model_params = {
     "initial_viral_size": UserSettableParameter(
         "slider",
         "Initial viral size",
-        10,
-        10,
+        5,
+        5,
         50,
         1,
         description="Viral size determine the number of interested nodes",
@@ -106,7 +106,7 @@ model_params = {
     "meme_spread_chance": UserSettableParameter(
         "slider",
         "Meme spread chance",
-        0.4,
+        0.3,
         0.0,
         1.0,
         0.1,

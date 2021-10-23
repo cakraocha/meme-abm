@@ -36,16 +36,16 @@ class MemeModel(Model):
         self,
         num_nodes=100,
         n_groups=2,
-        initial_viral_size=10,
-        meme_spread_chance=0.4,
+        initial_viral_size=5,
+        meme_spread_chance=0.3,
         maybe_bored=0.3
     ) -> None:
         # init model variables
         self.num_nodes = num_nodes
         node_list = [num_nodes // n_groups for _ in range(n_groups)]
         node_list[-1] += num_nodes - sum(node_list)  # adding odd nodes to last group
-        p_in = 0.01
-        p_out = 0.05
+        p_in = 0.05
+        p_out = 0.01
         self.G = nx.random_partition_graph(node_list, p_in, p_out)
         self.grid = NetworkGrid(self.G)
         self.schedule = RandomActivation(self)
@@ -84,6 +84,9 @@ class MemeModel(Model):
         self.running = True
         self.datacollector.collect(self)
 
+    def set_running(self, bool):
+        self.running = bool
+
     def bored_susceptible_ratio(self):
         try:
             return number_state(self, State.BORED) / number_state(
@@ -97,8 +100,18 @@ class MemeModel(Model):
         # collect data
         self.datacollector.collect(self)
 
+    def run_model(self):
+        while self.running:
+            if number_state(self, State.INTERESTED) == 0:
+                self.set_running(False)
+                break
+            self.step()
+
     def run_model(self, n):
-        for i in range(n):
+        for _ in range(n):
+            if number_state(self, State.INTERESTED) == 0:
+                self.set_running(False)
+                break
             self.step()
 
 
@@ -139,12 +152,8 @@ class MemeAgent(Agent):
     def try_be_bored(self):
         if self.random.random() < self.maybe_bored:
             self.state = State.BORED
-        # else:
-        #     self.state = State.INTERESTED
 
     def step(self):
         if self.state is State.INTERESTED:
             self.try_to_spread_memes()
-            self.try_be_bored()
-        if not State.BORED:
             self.try_be_bored()
