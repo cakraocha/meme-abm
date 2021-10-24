@@ -61,8 +61,10 @@ class MemeModel(Model):
         n_groups=2,
         initial_viral_size_A=1,
         initial_viral_size_B=1,
-        meme_spread_chance=0.3,
-        maybe_bored=0.3
+        meme_A_spread_chance=0.3,
+        meme_B_spread_chance=0.3,
+        maybe_bored_A=0.3,
+        maybe_bored_B=0.3
     ) -> None:
         # init model variables
         self.num_nodes = num_nodes
@@ -79,8 +81,10 @@ class MemeModel(Model):
         self.initial_viral_size_B = (
             initial_viral_size_B if initial_viral_size_B <= num_nodes else num_nodes
         )
-        self.meme_spread_chance = meme_spread_chance
-        self.maybe_bored = maybe_bored
+        self.meme_A_spread_chance = meme_A_spread_chance
+        self.maybe_bored_A = maybe_bored_A
+        self.meme_B_spread_chance = meme_B_spread_chance
+        self.maybe_bored_B = maybe_bored_B
 
         self.datacollector = DataCollector(
             {
@@ -100,8 +104,10 @@ class MemeModel(Model):
                 i,
                 self,
                 {State.SUSCEPTIBLE},
-                self.meme_spread_chance,
-                self.maybe_bored
+                self.meme_A_spread_chance,
+                self.meme_B_spread_chance,
+                self.maybe_bored_A,
+                self.maybe_bored_B
             )
             self.schedule.add(a)
             # add the agent to the node
@@ -166,8 +172,10 @@ class MemeAgent(Agent):
         unique_id,
         model,
         initial_state,
-        meme_spread_chance,
-        maybe_bored
+        meme_A_spread_chance,
+        meme_B_spread_chance,
+        maybe_bored_A,
+        maybe_bored_B
     ):
         """
         Initiate a new meme agent.
@@ -176,8 +184,11 @@ class MemeAgent(Agent):
 
         self.state = initial_state
 
-        self.meme_spread_chance = meme_spread_chance
-        self.maybe_bored = maybe_bored
+        self.meme_A_spread_chance = meme_A_spread_chance
+        self.meme_B_spread_chance = meme_B_spread_chance
+        self.maybe_bored_A = maybe_bored_A
+        self.maybe_bored_B = maybe_bored_B
+
 
     def try_to_spread_memes(self, state):
         neighbors_nodes = self.model.grid.get_neighbors(self.pos, include_center=False)
@@ -191,23 +202,23 @@ class MemeAgent(Agent):
         # ]
         if state is State.INTERESTED_A:
             for a in neighbors_contents:
-                if self.random.random() < self.meme_spread_chance:
+                if self.random.random() < self.meme_A_spread_chance:
                     if State.SUSCEPTIBLE in a.state:
                         a.state.remove(State.SUSCEPTIBLE)
                     a.state.add(State.INTERESTED_A)
         elif state is State.INTERESTED_B:
             for a in neighbors_contents:
-                if self.random.random() < self.meme_spread_chance:
+                if self.random.random() < self.meme_B_spread_chance:
                     if State.SUSCEPTIBLE in a.state:
                         a.state.remove(State.SUSCEPTIBLE)
                     a.state.add(State.INTERESTED_B)
 
     def try_be_bored(self, state):
         bored_random = self.random.random()
-        if state is State.INTERESTED_A and bored_random < self.maybe_bored:
+        if state is State.INTERESTED_A and bored_random < self.maybe_bored_A:
             self.state.remove(State.INTERESTED_A)
             self.state.add(State.BORED_A)
-        if state is State.INTERESTED_B and bored_random < self.maybe_bored:
+        if state is State.INTERESTED_B and bored_random < self.maybe_bored_B:
             self.state.remove(State.INTERESTED_B)
             self.state.add(State.BORED_B)
 
@@ -218,4 +229,3 @@ class MemeAgent(Agent):
         if State.INTERESTED_B in self.state:
             self.try_to_spread_memes(State.INTERESTED_B)
             self.try_be_bored(State.INTERESTED_B)
-        

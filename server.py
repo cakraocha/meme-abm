@@ -138,23 +138,41 @@ model_params = {
         1,
         description="Viral size determine the number of interested nodes for meme B",
     ),
-    "meme_spread_chance": UserSettableParameter(
+    "meme_A_spread_chance": UserSettableParameter(
         "slider",
-        "Meme spread chance",
+        "Meme A spread chance",
         0.3,
         0.0,
         1.0,
         0.1,
-        description="Probability that a meme will spread to another node",
+        description="Probability for 'Meme A' in spreading to another node",
     ),
-    "maybe_bored": UserSettableParameter(
+    "meme_B_spread_chance": UserSettableParameter(
         "slider",
-        "Become bored chance",
+        "Meme B spread chance",
         0.3,
         0.0,
         1.0,
         0.1,
-        description="Probability that a node become bored and not spread meme",
+        description="Probability for 'Meme B' in spreading to another node",
+    ),
+    "maybe_bored_A": UserSettableParameter(
+        "slider",
+        "Become bored Meme A chance",
+        0.3,
+        0.0,
+        1.0,
+        0.1,
+        description="Probability that a node become bored of 'Meme A' and not spread meme",
+    ),
+    "maybe_bored_B": UserSettableParameter(
+        "slider",
+        "Become bored Meme B chance",
+        0.3,
+        0.0,
+        1.0,
+        0.1,
+        description="Probability that a node become bored of 'Meme B' and not spread meme",
     ),
 }
 
