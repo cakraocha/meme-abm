@@ -4,6 +4,7 @@ from mesa.visualization.modules import ChartModule
 from mesa.visualization.modules import NetworkModule
 from mesa.visualization.modules import TextElement
 from model import MemeModel, number_interested_B, number_interested_A
+from model import number_interest_A, number_interest_B
 from state import State
 
 import math
@@ -52,16 +53,20 @@ def network_portrayal(G):
         return G.nodes[source]["agent"][0], G.nodes[target]["agent"][0]
 
     portrayal = {}
-    portrayal["nodes"] = [
-        {
-            "size": 6,
+    portrayal["nodes"] = []
+    for (_, agents) in G.nodes.data("agent"):
+        size = 5
+        if State.INFLUENCER in agents[0].state:
+            size = 9
+        portrayal["nodes"].append(
+            {
+            "size": size,
             "color": node_color(agents[0]),
             "tooltip": "id: {}<br>state: {}".format(
                 agents[0].unique_id, [s.name for s in agents[0].state]
             ),
-        }
-        for (_, agents) in G.nodes.data("agent")
-    ]
+            }
+        )
 
     portrayal["edges"] = [
         {
@@ -95,9 +100,13 @@ class MyTextElement(TextElement):
         # ratio_text = "&infin;" if ratio is math.inf else "{0:2f}".format(ratio)
         interested_A_text = str(number_interested_A(model))
         interested_B_text = str(number_interested_B(model))
+        interest_A_text = str(number_interest_A(model))
+        interest_B_text = str(number_interest_B(model))
 
-        return "Interested A remaining: {}<br>Interested B remaining: {}".format(
+        return "Interested A remaining: {} | Interested B remaining: {}<br>".format(
             interested_A_text, interested_B_text
+        ) + "Total interest in Meme A: {} | Total interest in Meme B: {}".format(
+            interest_A_text, interest_B_text
         )
 
 
@@ -138,41 +147,59 @@ model_params = {
         1,
         description="Viral size determine the number of interested nodes for meme B",
     ),
-    "meme_A_spread_chance": UserSettableParameter(
+    "meme_spread_chance": UserSettableParameter(
         "slider",
-        "Meme A spread chance",
+        "Meme spread chance",
         0.3,
         0.0,
         1.0,
         0.1,
-        description="Probability for 'Meme A' in spreading to another node",
+        description="Probability for a Meme to spread to another node",
     ),
-    "meme_B_spread_chance": UserSettableParameter(
+    "maybe_bored": UserSettableParameter(
         "slider",
-        "Meme B spread chance",
+        "Become bored chance",
         0.3,
         0.0,
         1.0,
         0.1,
-        description="Probability for 'Meme B' in spreading to another node",
+        description="Probability that a node become bored and not spread meme",
     ),
-    "maybe_bored_A": UserSettableParameter(
+    "influencer_appearance": UserSettableParameter(
         "slider",
-        "Become bored Meme A chance",
-        0.3,
-        0.0,
-        1.0,
-        0.1,
-        description="Probability that a node become bored of 'Meme A' and not spread meme",
+        "Appearance size of an influencer",
+        1,
+        0,
+        10,
+        1,
+        description="The size of the influencer in the network",
     ),
-    "maybe_bored_B": UserSettableParameter(
+    "influencer_spread_chance": UserSettableParameter(
         "slider",
-        "Become bored Meme B chance",
-        0.3,
-        0.0,
+        "spread chance from an influencer",
+        0.5,
+        0.1,
         1.0,
         0.1,
-        description="Probability that a node become bored of 'Meme B' and not spread meme",
+        description="Probability that an influencer spread the meme",
+    ),
+    "interest_meme_A_chance": UserSettableParameter(
+        "slider",
+        "interest for meme A chance",
+        0.5,
+        0,
+        1.0,
+        0.1,
+        description="Probability that a node will develop interest for Meme A",
+    ),
+    "interest_meme_B_chance": UserSettableParameter(
+        "slider",
+        "interest for meme B chance",
+        0.5,
+        0,
+        1.0,
+        0.1,
+        description="Probability that a node will develop interest for Meme A",
     ),
 }
 
