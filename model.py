@@ -19,6 +19,26 @@ def number_state_dual(model, state1, state2):
     ])
 
 
+def number_steps(model):
+    return model.step_counter
+
+
+def number_peak_meme_A(model):
+    return model.get_peak_meme_A()
+
+
+def number_peak_meme_B(model):
+    return model.get_peak_meme_B()
+
+
+def step_peak_meme_A(model):
+    return model.get_step_peak_meme_A()
+
+
+def step_peak_meme_B(model):
+    return model.get_step_peak_meme_B()
+
+
 def number_susceptible(model):
     return number_state(model, State.SUSCEPTIBLE)
 
@@ -69,12 +89,12 @@ class MemeModel(Model):
         self,
         num_nodes=100,
         n_groups=2,
-        initial_viral_size_A=1,
-        initial_viral_size_B=1,
+        initial_viral_size_A=5,
+        initial_viral_size_B=5,
         meme_spread_chance=0.3,
         maybe_bored=0.3,
         influencer_appearance=1,
-        influencer_spread_chance=0.5,
+        influencer_spread_chance=0.6,
         interest_meme_A_chance=0.5,
         interest_meme_B_chance=0.5
     ) -> None:
@@ -113,10 +133,17 @@ class MemeModel(Model):
             }
         )
 
-        # fixed probability used in determining user interest
+        # probability used in determining user interest
         # TODO: make parameterised
         self.interest_meme_A_chance = interest_meme_A_chance
         self.interest_meme_B_chance = interest_meme_B_chance
+
+        # recording peak interest in meme
+        self.peak_meme_A = 0
+        self.peak_meme_B = 0
+        self.step_counter = 0
+        self.step_meme_A = 0
+        self.step_meme_B = 0
 
         # create agents
         for i, node in enumerate(self.G.nodes()):
@@ -176,11 +203,30 @@ class MemeModel(Model):
 
     def step(self):
         self.schedule.step()
+        self.step_counter += 1
         # collect data
         self.datacollector.collect(self)
+        if number_interested_A(self) > self.peak_meme_A:
+            self.peak_meme_A = number_interested_A(self)
+            self.step_meme_A = self.step_counter
+        if number_interested_B(self) > self.peak_meme_B:
+            self.peak_meme_B = number_interested_B(self)
+            self.step_meme_B = self.step_counter
         # stop condition is when no one is actively spreading the meme
         if number_interested_A(self) + number_interested_B(self) == 0:
             self.running = False
+
+    def get_peak_meme_A(self):
+        return self.peak_meme_A
+
+    def get_peak_meme_B(self):
+        return self.peak_meme_B
+
+    def get_step_peak_meme_A(self):
+        return self.step_meme_A
+
+    def get_step_peak_meme_B(self):
+        return self.step_meme_B
 
     # def run_model(self, n):
     #     for _ in range(n):

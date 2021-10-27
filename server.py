@@ -177,7 +177,7 @@ model_params = {
     "influencer_spread_chance": UserSettableParameter(
         "slider",
         "spread chance from an influencer",
-        0.5,
+        0.6,
         0.1,
         1.0,
         0.1,
