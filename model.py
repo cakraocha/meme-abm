@@ -8,6 +8,11 @@ from mesa.datacollection import DataCollector
 from mesa.space import NetworkGrid
 
 
+#############################
+# FUNCTIONS TO COLLECT DATA #
+#############################
+
+
 def number_state(model, state):
     return sum([1 for a in model.grid.get_all_cell_contents() if state in a.state])
 
@@ -79,10 +84,50 @@ def number_interest_both(model):
     return number_state_dual(model, State.INTEREST_A, State.INTEREST_B)
 
 
+####################################
+# END OF COLLECTING DATA FUNCTIONS #
+####################################
+
+
 class MemeModel(Model):
     """
     A meme model with a number of agents.
     The model will run on a graph environment.
+
+    :param num_nodes: *int*, default 100
+        The number of nodes that will be simulated in the model.
+        Range between 100 - 500 with 10 incremental.
+    
+    :param n_groups: *int*, default 2
+        The number of groups that will divide the nodes.
+        The number of nodes will be divided evenly with odd
+        numbers will be added in the last group.
+        e.g. 100 nodes with 3 groups makes [33, 33, 34].
+    
+    :param initial_viral_size_A: *int*, default 5
+        The initial number of nodes that is interested to Meme A.
+    
+    :param initial_viral_size_B: *int*, default 5
+        The initial number of nodes that is interested to Meme B.
+    
+    :param meme_spread_chance: *int*, default 0.3
+        The base probability of a meme to spread to other nodes.
+    
+    :param maybe_bored: *int*, default 0.3
+        The base probability of a node to be bored of a meme.
+    
+    :param influencer_appearance: *int*, default 1
+        The number of influencer(s) in a given scenario.
+    
+    :param influencer_spread_chance: *int*, default 0.6
+        The base probability of an influencer to spread meme to other nodes.
+    
+    :interest_meme_A_chance: *int*, default 0.5
+        The probability of a node to develop interest to Meme A.
+    
+    :interest_meme_B_chance: *int*, default 0.5
+        The probability of a node to develop interest to Meme B.
+    
     """
 
     def __init__(
@@ -206,6 +251,7 @@ class MemeModel(Model):
         self.step_counter += 1
         # collect data
         self.datacollector.collect(self)
+        # recording number of peak interested in a meme with step n
         if number_interested_A(self) > self.peak_meme_A:
             self.peak_meme_A = number_interested_A(self)
             self.step_meme_A = self.step_counter
@@ -227,14 +273,6 @@ class MemeModel(Model):
 
     def get_step_peak_meme_B(self):
         return self.step_meme_B
-
-    # def run_model(self, n):
-    #     for _ in range(n):
-    #         print(f"interest: {number_interested_A}")
-    #         if number_interested_A + number_interested_B == 0:
-    #             self.running = False
-    #             break
-    #         self.step()
 
 
 class MemeAgent(Agent):
