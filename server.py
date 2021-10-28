@@ -5,15 +5,19 @@ from mesa.visualization.modules import NetworkModule
 from mesa.visualization.modules import TextElement
 from model import MemeModel, number_interested_B, number_interested_A
 from model import number_interest_A, number_interest_B
+from model import number_peak_meme_A, number_peak_meme_B, step_peak_meme_A, step_peak_meme_B
 from state import State
-
-import math
 
 
 def network_portrayal(G):
     # the model ensures there is always 1 agent per node
 
     def node_color(agent):
+        """
+        A method to define the node color.
+        The color of the node will change depending on the state
+        of the agent has.
+        """
         if State.SUSCEPTIBLE in agent.state:
             return "#3CB043"
         if State.INTERESTED_A in agent.state and State.INTERESTED_B in agent.state:
@@ -28,13 +32,13 @@ def network_portrayal(G):
             return "#4E0707"
         if State.BORED_B in agent.state:
             return "#0A1172"
-        # return {
-        #     State.SUSCEPTIBLE: "#3CB043", State.INTERESTED: "#E3242B"
-        # }.get(agent.state, "#808080")
 
     def edge_color(agent1, agent2):
-        # if State.BORED in (agent1.state, agent2.state):
-        #     return "#000000"
+        """
+        A method to define the edge color.
+        The color of the edge will change depending on the state
+        of the agent has.
+        """
         if (State.INTERESTED_A in agent1.state and State.INTERESTED_B in agent1.state) \
             or (State.INTERESTED_A in agent2.state and State.INTERESTED_B in agent2.state):
             return "#710193"
@@ -44,9 +48,7 @@ def network_portrayal(G):
             return "#1338BE"
         return "#E8E8E8"
 
-    def edge_width(agent1, agent2):
-        # if State.BORED in (agent1.state, agent2.state):
-        #     return 3
+    def edge_width():
         return 2
 
     def get_agents(source, target):
@@ -73,7 +75,7 @@ def network_portrayal(G):
             "source": source,
             "target": target,
             "color": edge_color(*get_agents(source, target)),
-            "width": edge_width(*get_agents(source, target)),
+            "width": edge_width(),
         }
         for (source, target) in G.edges
     ]
@@ -96,17 +98,23 @@ chart = ChartModule(
 
 class MyTextElement(TextElement):
     def render(self, model):
-        # ratio = model.bored_susceptible_ratio()
-        # ratio_text = "&infin;" if ratio is math.inf else "{0:2f}".format(ratio)
         interested_A_text = str(number_interested_A(model))
         interested_B_text = str(number_interested_B(model))
         interest_A_text = str(number_interest_A(model))
         interest_B_text = str(number_interest_B(model))
+        peak_meme_A = str(number_peak_meme_A(model))
+        peak_meme_B = str(number_peak_meme_B(model))
+        step_meme_A = str(step_peak_meme_A(model))
+        step_meme_B = str(step_peak_meme_A(model))
 
         return "Interested A remaining: {} | Interested B remaining: {}<br>".format(
             interested_A_text, interested_B_text
-        ) + "Total interest in Meme A: {} | Total interest in Meme B: {}".format(
+        ) + "Total interest in Meme A: {} | Total interest in Meme B: {}<br>".format(
             interest_A_text, interest_B_text
+        ) + "Peak interest in Meme A: {} | On Step: {}<br>".format(
+            peak_meme_A, step_meme_A
+        ) + "Peak interest in Meme B: {} | On Step: {}<br>".format(
+            peak_meme_B, step_meme_B
         )
 
 

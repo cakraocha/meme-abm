@@ -2,7 +2,9 @@ import networkx as nx
 
 from state import State
 
-from mesa import Model, Agent
+from agent import MemeAgent
+
+from mesa import Model
 from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector
 from mesa.space import NetworkGrid
@@ -103,30 +105,39 @@ class MemeModel(Model):
         The number of nodes will be divided evenly with odd
         numbers will be added in the last group.
         e.g. 100 nodes with 3 groups makes [33, 33, 34].
+        Range between 2 - 10 with 1 incremental.
     
     :param initial_viral_size_A: *int*, default 5
         The initial number of nodes that is interested to Meme A.
+        Range between 5 - 50 with 1 incremental.
     
     :param initial_viral_size_B: *int*, default 5
         The initial number of nodes that is interested to Meme B.
+        Range between 5 - 50 with 1 incremental.
     
-    :param meme_spread_chance: *int*, default 0.3
+    :param meme_spread_chance: *float*, default 0.3
         The base probability of a meme to spread to other nodes.
+        Range between 0 - 1 with 0.1 incremental.
     
-    :param maybe_bored: *int*, default 0.3
+    :param maybe_bored: *float*, default 0.3
         The base probability of a node to be bored of a meme.
+        Range between 0 - 1 with 0.1 incremental.
     
     :param influencer_appearance: *int*, default 1
         The number of influencer(s) in a given scenario.
+        Range between 1 - 10 with 1 incremental.
     
-    :param influencer_spread_chance: *int*, default 0.6
+    :param influencer_spread_chance: *float*, default 0.6
         The base probability of an influencer to spread meme to other nodes.
+        Range between 0.1 - 1 with 0.1 incremental.
     
     :interest_meme_A_chance: *int*, default 0.5
         The probability of a node to develop interest to Meme A.
+        Range between 0 - 1 with 0.1 incremental.
     
     :interest_meme_B_chance: *int*, default 0.5
         The probability of a node to develop interest to Meme B.
+        Range between 0 - 1 with 0.1 incremental.
     
     """
 
@@ -273,112 +284,3 @@ class MemeModel(Model):
 
     def get_step_peak_meme_B(self):
         return self.step_meme_B
-
-
-class MemeAgent(Agent):
-    """
-    Internet meme agent that consume and spread memes.
-    """
-
-
-    def __init__(
-        self,
-        unique_id,
-        model,
-        initial_state,
-        meme_spread_chance,
-        maybe_bored,
-        meme_interest_A,
-        meme_interest_B,
-        influencer_spread_chance
-    ):
-        """
-        Initiate a new meme agent.
-        """
-        super().__init__(unique_id, model)
-
-        self.state = initial_state
-
-        if State.INFLUENCER in initial_state:
-            self.meme_A_spread_chance = influencer_spread_chance * meme_interest_A
-            self.meme_B_spread_chance = influencer_spread_chance * meme_interest_B
-        else:
-            self.meme_A_spread_chance = meme_spread_chance * meme_interest_A
-            self.meme_B_spread_chance = meme_spread_chance * meme_interest_B
-        self.maybe_bored_A = maybe_bored
-        self.maybe_bored_B = maybe_bored
-
-        # we set a time before an agent change state
-        # for now, we set the time into 2
-        self.TIME_BEFORE_INTERESTED_A = self.random.randrange(1, 2, 1)
-        self.TIME_BEFORE_INTERESTED_B = self.random.randrange(1, 2, 1)
-        self.TIME_BEFORE_BORED_A = self.random.randrange(2, 4, 1)
-        self.TIME_BEFORE_BORED_B = self.random.randrange(2, 4, 1)
-
-
-    def deduct_before_interest_A(self):
-        self.TIME_BEFORE_INTERESTED_A -= 1
-
-    def deduct_before_bored_A(self):
-        self.TIME_BEFORE_BORED_A -= 1
-
-    def deduct_before_interest_B(self):
-        self.TIME_BEFORE_INTERESTED_B -= 1
-
-    def deduct_before_bored_B(self):
-        self.TIME_BEFORE_BORED_B -= 1
-
-    def try_to_spread_memes(self, state):
-        """
-        A method for agent to spread memes.
-        """
-        neighbors_nodes = self.model.grid.get_neighbors(self.pos, include_center=False)
-        neighbors_contents = [
-            agent for agent in self.model.grid.get_cell_list_contents(neighbors_nodes)
-            if State.BORED_A not in agent.state and State.BORED_B not in agent.state
-        ]
-        # susceptible_neighbors = [
-        #     agent for agent in self.model.grid.get_cell_list_contents(neighbors_nodes)
-        #     if State.SUSCEPTIBLE in agent.state
-        # ]
-        if state is State.INTERESTED_A:
-            for a in neighbors_contents:
-                if self.TIME_BEFORE_INTERESTED_A > 0:
-                    self.deduct_before_interest_A()
-                if self.random.random() < self.meme_A_spread_chance:
-                    if self.TIME_BEFORE_INTERESTED_A == 0:
-                        if State.SUSCEPTIBLE in a.state:
-                            a.state.remove(State.SUSCEPTIBLE)
-                        a.state.add(State.INTERESTED_A)
-        elif state is State.INTERESTED_B:
-            for a in neighbors_contents:
-                if self.TIME_BEFORE_INTERESTED_B > 0:
-                    self.deduct_before_interest_B()
-                if self.random.random() < self.meme_B_spread_chance:
-                    if self.TIME_BEFORE_INTERESTED_B == 0:
-                        if State.SUSCEPTIBLE in a.state:
-                            a.state.remove(State.SUSCEPTIBLE)
-                        a.state.add(State.INTERESTED_B)
-
-    def try_be_bored(self, state):
-        if state is State.INTERESTED_A and self.TIME_BEFORE_BORED_A > 0:
-            self.deduct_before_bored_A()
-        elif state is State.INTERESTED_B and self.TIME_BEFORE_BORED_B > 0:
-            self.deduct_before_bored_B()
-        bored_random = self.random.random()
-        if state is State.INTERESTED_A and bored_random < self.maybe_bored_A:
-            if self.TIME_BEFORE_BORED_A == 0:
-                self.state.remove(State.INTERESTED_A)
-                self.state.add(State.BORED_A)
-        if state is State.INTERESTED_B and bored_random < self.maybe_bored_B:
-            if self.TIME_BEFORE_BORED_B == 0:
-                self.state.remove(State.INTERESTED_B)
-                self.state.add(State.BORED_B)
-
-    def step(self):
-        if State.INTERESTED_A in self.state:
-            self.try_to_spread_memes(State.INTERESTED_A)
-            self.try_be_bored(State.INTERESTED_A)
-        if State.INTERESTED_B in self.state:
-            self.try_to_spread_memes(State.INTERESTED_B)
-            self.try_be_bored(State.INTERESTED_B)
