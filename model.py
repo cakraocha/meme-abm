@@ -212,16 +212,19 @@ class MemeModel(Model):
 
         self.datacollector = DataCollector(
             {
-                "Susceptible": number_susceptible,
-                "Interested_A": number_interested_A,
-                "Interested_B": number_interested_B,
-                "Interested_both": number_interested_both,
-                "Bored_A": number_bored_A,
-                "Bored_B": number_bored_B,
-                "Bored_both": number_bored_both,
-                "Interest_A": number_interest_A,
-                "Interest_B": number_interest_B,
-                "Interest_both": number_interest_both
+                # "Susceptible": number_susceptible,
+                # "Interested_A": number_interested_A,
+                # "Interested_B": number_interested_B,
+                # "Interested_both": number_interested_both,
+                # "Bored_A": number_bored_A,
+                # "Bored_B": number_bored_B,
+                # "Bored_both": number_bored_both,
+                # "Interest_A": number_interest_A,
+                # "Interest_B": number_interest_B,
+                # "Interest_both": number_interest_both
+                "Percentage_spread": percentage_spread,
+                "Percentage_meme_A": percentage_meme_A_spread,
+                "Percentage_meme_B": percentage_meme_B_spread
             }
         )
 
