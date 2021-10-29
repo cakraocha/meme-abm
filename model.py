@@ -86,6 +86,42 @@ def number_interest_both(model):
     return number_state_dual(model, State.INTEREST_A, State.INTEREST_B)
 
 
+def number_people_interested(model):
+    return sum(
+        [
+            1 for a in model.grid.get_all_cell_contents()
+            if State.BORED_A in a.state or State.BORED_B in a.state
+            or State.INTERESTED_A in a.state or State.INTERESTED_B in a.state
+        ]
+    )
+
+
+def number_actual_nodes(model):
+    return sum([1 for a in model.grid.get_all_cell_contents()])
+
+
+def percentage_spread(model):
+    return number_people_interested(model) / number_actual_nodes(model)
+
+
+def percentage_meme_A_spread(model):
+    return sum(
+        [
+            1 for a in model.grid.get_all_cell_contents()
+            if State.BORED_A in a.state or State.INTERESTED_A in a.state
+        ]
+    ) / number_people_interested(model)
+
+
+def percentage_meme_B_spread(model):
+    return sum(
+        [
+            1 for a in model.grid.get_all_cell_contents()
+            if State.BORED_B in a.state or State.INTERESTED_B in a.state
+        ]
+    ) / number_people_interested(model)
+
+
 ####################################
 # END OF COLLECTING DATA FUNCTIONS #
 ####################################
@@ -284,3 +320,6 @@ class MemeModel(Model):
 
     def get_step_peak_meme_B(self):
         return self.step_meme_B
+    
+    def get_num_nodes(self):
+        return self.num_nodes

@@ -4,8 +4,9 @@ from mesa.visualization.modules import ChartModule
 from mesa.visualization.modules import NetworkModule
 from mesa.visualization.modules import TextElement
 from model import MemeModel, number_interested_B, number_interested_A
-from model import number_interest_A, number_interest_B
+from model import number_interest_A, number_interest_B, percentage_spread
 from model import number_peak_meme_A, number_peak_meme_B, step_peak_meme_A, step_peak_meme_B
+from model import percentage_meme_A_spread, percentage_meme_B_spread
 from state import State
 
 
@@ -105,7 +106,10 @@ class MyTextElement(TextElement):
         peak_meme_A = str(number_peak_meme_A(model))
         peak_meme_B = str(number_peak_meme_B(model))
         step_meme_A = str(step_peak_meme_A(model))
-        step_meme_B = str(step_peak_meme_A(model))
+        step_meme_B = str(step_peak_meme_B(model))
+        pct_spread = percentage_spread(model) * 100
+        pct_spread_A = percentage_meme_A_spread(model) * 100
+        pct_spread_B = percentage_meme_B_spread(model) * 100
 
         return "Interested A remaining: {} | Interested B remaining: {}<br>".format(
             interested_A_text, interested_B_text
@@ -115,6 +119,10 @@ class MyTextElement(TextElement):
             peak_meme_A, step_meme_A
         ) + "Peak interest in Meme B: {} | On Step: {}<br>".format(
             peak_meme_B, step_meme_B
+        ) + "Percentage of spread: {:.2f}%<br>".format(
+            pct_spread
+        ) + "Percentage of spread A: {:.2f}% | Percentage of spread B: {:.2f}%<br>".format(
+            pct_spread_A, pct_spread_B
         )
 
 
